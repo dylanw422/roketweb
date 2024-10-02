@@ -5,6 +5,7 @@ import { cn, constructMetadata } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { QueryClientProviderWrapper } from "@/components/query-client-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,15 +32,17 @@ export default function RootLayout({
           inter.className,
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-        >
-          {children}
-          <ThemeToggle />
-          <TailwindIndicator />
-        </ThemeProvider>
+        <QueryClientProviderWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+          >
+            {children}
+            <ThemeToggle />
+            <TailwindIndicator />
+          </ThemeProvider>
+        </QueryClientProviderWrapper>
       </body>
     </html>
   );

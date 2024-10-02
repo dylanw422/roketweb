@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import crypto from "crypto";
 import { neon } from "@neondatabase/serverless";
+import { Resend } from "resend";
+import EmailTemplate from "@/components/email-template";
 
 type METADATA = {
   userId: string;
@@ -10,6 +12,7 @@ type METADATA = {
 };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(request: NextRequest) {
   const sql = neon(process.env.DATABASE_URL!);
@@ -38,6 +41,7 @@ export async function POST(request: NextRequest) {
   const data = event.data.object;
   const created = data.created;
   const customerEmail = data.customer_details?.email;
+  const name = data.customer_details?.name;
 
   try {
     function generateProductKey() {
@@ -51,6 +55,20 @@ export async function POST(request: NextRequest) {
       "INSERT INTO product_keys (product_key, email, created_at) VALUES ($1, $2, $3)",
       [productKey, customerEmail, new Date(created)],
     );
+
+    const { error } = await resend.emails.send({
+      from: "roket@roket.app",
+      to: customerEmail ? customerEmail : "",
+      subject: "Thank you for your purchase! Your product key is...",
+      react: EmailTemplate({ name, productKey }),
+    });
+
+    if (error) {
+      console.error(error);
+      return Response.json("Unable to send email", {
+        status: 500,
+      });
+    }
 
     return Response.json("Product key generated", {
       status: 200,

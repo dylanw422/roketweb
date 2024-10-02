@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     );
 
     const { error } = await resend.emails.send({
-      from: "roket@roket.app",
+      from: "Roket <no-reply@roket.work>",
       to: customerEmail ? customerEmail : "",
       subject: "Thank you for your purchase! Your product key is...",
       react: EmailTemplate({ name, productKey }),

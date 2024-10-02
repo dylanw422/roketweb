@@ -7,6 +7,10 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { ImSpinner8 } from "react-icons/im";
 
 interface TabsProps {
   activeTab: string;
@@ -58,9 +62,15 @@ const tiers = [
 function PricingTier({
   tier,
   billingCycle,
+  createCheckout,
+  handleClick,
 }: {
   tier: (typeof tiers)[0];
   billingCycle: "monthly" | "yearly";
+  handleClick: () => void;
+  createCheckout: {
+    isFetching: boolean;
+  };
 }) {
   return (
     <div
@@ -111,6 +121,7 @@ function PricingTier({
       </CardContent>
       {tier.name === "Roket" ? (
         <Button
+          onClick={() => handleClick()}
           size="lg"
           className={cn(
             "mt-4 w-full rounded-lg shadow-none",
@@ -119,7 +130,11 @@ function PricingTier({
               : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800",
           )}
         >
-          Buy Now
+          {createCheckout.isFetching ? (
+            <ImSpinner8 className="animate-spin" />
+          ) : (
+            "Buy Now"
+          )}
         </Button>
       ) : null}
     </div>
@@ -127,12 +142,32 @@ function PricingTier({
 }
 
 export default function Pricing() {
+  const router = useRouter();
+  const [queryEnabled, setQueryEnabled] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "yearly",
   );
 
   const handleTabChange = (tab: "yearly" | "monthly") => {
     setBillingCycle(tab);
+  };
+
+  const createCheckout = useQuery({
+    queryKey: ["checkout"],
+    queryFn: async () => {
+      const res = await axios.post("/api/checkout", {
+        priceId: "price_1Q5CKPErMDODl50He7NfE1Ca",
+      });
+      if (res.status === 200) {
+        router.push(res.data.result.url);
+      }
+    },
+    enabled: queryEnabled,
+  });
+
+  const handlePurchaseClick = () => {
+    setQueryEnabled(true);
+    createCheckout.refetch();
   };
 
   return (
@@ -150,7 +185,13 @@ export default function Pricing() {
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
           {tiers.map((tier, index) => (
-            <PricingTier key={index} tier={tier} billingCycle={billingCycle} />
+            <PricingTier
+              key={index}
+              tier={tier}
+              billingCycle={billingCycle}
+              createCheckout={createCheckout}
+              handleClick={handlePurchaseClick}
+            />
           ))}
         </div>
       </div>

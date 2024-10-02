@@ -38,7 +38,7 @@ const email = {
 };
 
 const image = {
-  width: "15%",
+  width: "50px",
   margin: "24px 50%",
   transform: "translateX(-50%)",
 };
@@ -76,4 +76,5 @@ const footer = {
   fontSize: "12px",
   color: "#505050",
   margin: "60px 0px 0px 0px",
+  fontWeight: "300",
 };

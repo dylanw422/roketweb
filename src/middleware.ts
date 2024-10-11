@@ -13,12 +13,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url)); // If no JWT is found, redirect to login page
   }
 
-  if (!uuidCookie && req.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/sign-up", req.url)); // If no JWT is found, redirect to login page
-  }
-
-  if (jwtCookie && req.nextUrl.pathname === "/sign-up") {
-    return NextResponse.redirect(new URL("/login", req.url)); // If JWT is found, redirect to login page
+  if (uuidCookie && req.nextUrl.pathname === "/sign-up") {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (jwtCookie) {

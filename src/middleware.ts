@@ -27,5 +27,4 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: ["/dashboard/:path*"], // Apply middleware to the dashboard and login pages
-  runtime: "nodejs",
 };

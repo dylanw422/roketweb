@@ -26,6 +26,8 @@
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.1.7",
     "framer-motion": "^11.3.21",
+    "jose": "^5.9.4",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.417.0",
     "next": "14.2.7",
     "next-themes": "^0.3.0",
@@ -48,6 +50,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

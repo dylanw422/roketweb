@@ -7,10 +7,18 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 export async function middleware(req: NextRequest) {
   const { cookies } = req;
   const jwtCookie = cookies.get("jwt"); // Get the JWT from cookies
+  const uuidCookie = cookies.get("uuid");
 
   if (!jwtCookie && req.nextUrl.pathname.startsWith("/dashboard")) {
-    console.log("no cookie found");
     return NextResponse.redirect(new URL("/login", req.url)); // If no JWT is found, redirect to login page
+  }
+
+  if (!uuidCookie && req.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/sign-up", req.url)); // If no JWT is found, redirect to login page
+  }
+
+  if (jwtCookie && req.nextUrl.pathname === "/sign-up") {
+    return NextResponse.redirect(new URL("/login", req.url)); // If JWT is found, redirect to login page
   }
 
   if (jwtCookie) {
@@ -30,5 +38,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"], // Apply middleware to the dashboard and login pages
+  matcher: ["/dashboard/:path*", "/login", "/sign-up"],
 };

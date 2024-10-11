@@ -1,23 +1,18 @@
 import Stripe from "stripe";
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
-import crypto from "crypto";
 import { neon } from "@neondatabase/serverless";
 import { Resend } from "resend";
 import EmailTemplate from "@/components/email-template";
+import { cookies } from "next/headers";
 
-type METADATA = {
-  userId: string;
-  priceId: string;
-};
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_TEST_KEY!);
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(request: NextRequest) {
   const sql = neon(process.env.DATABASE_URL!);
   const body = await request.text();
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_TEST_SECRET!;
   const sig = headers().get("stripe-signature") as string;
   let event: Stripe.Event;
   try {
@@ -42,35 +37,31 @@ export async function POST(request: NextRequest) {
   const created = data.created;
   const customerEmail = data.customer_details?.email;
   const name = data.customer_details?.name;
+  const uuid = data.metadata?.uuid;
 
   try {
-    function generateProductKey() {
-      const productKey = crypto.randomBytes(8).toString("hex").toUpperCase();
-      return productKey.match(/.{1,4}/g)?.join("-");
-    }
+    await sql(`UPDATE users SET paid = $1, paid_at = $2 WHERE uuid = $3`, [
+      true,
+      new Date(),
+      uuid,
+    ]);
 
-    const productKey = generateProductKey();
+    // SEND EMAIL TO USER
+    // const { error } = await resend.emails.send({
+    //   from: "Roket <no-reply@roket.work>",
+    //   to: customerEmail ? customerEmail : "",
+    //   subject: "Thank you for your purchase!",
+    //   react: EmailTemplate({ name }),
+    // });
+    //
+    // if (error) {
+    //   console.error(error);
+    //   return Response.json("Unable to send email", {
+    //     status: 500,
+    //   });
+    // }
 
-    await sql(
-      "INSERT INTO product_keys (product_key, email, created_at) VALUES ($1, $2, $3)",
-      [productKey, customerEmail, new Date(created)],
-    );
-
-    const { error } = await resend.emails.send({
-      from: "Roket <no-reply@roket.work>",
-      to: customerEmail ? customerEmail : "",
-      subject: "Thank you for your purchase! Your product key is...",
-      react: EmailTemplate({ name, productKey }),
-    });
-
-    if (error) {
-      console.error(error);
-      return Response.json("Unable to send email", {
-        status: 500,
-      });
-    }
-
-    return Response.json("Product key generated", {
+    return Response.json("User created.", {
       status: 200,
     });
   } catch (error) {

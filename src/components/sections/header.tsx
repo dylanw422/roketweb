@@ -8,9 +8,11 @@ import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header({ isMac }: any) {
   const [addBorder, setAddBorder] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,19 +48,19 @@ export default function Header({ isMac }: any) {
 
         <div className="hidden lg:block">
           <div className="flex items-center ">
-            <nav className="mr-10">
+            <nav className="mr-5">
               <Menu />
             </nav>
 
             <div className="gap-2 flex">
               <button
+                onClick={() => router.push("/login")}
                 className={cn(
                   buttonVariants({ variant: "default" }),
-                  "w-full sm:w-auto text-background flex gap-2",
+                  "w-full sm:w-auto text-background flex gap-2 px-8",
                 )}
               >
-                <Icons.download />
-                Download for {isMac ? "Mac" : "Windows"}
+                Login
               </button>
             </div>
           </div>

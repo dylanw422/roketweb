@@ -54,7 +54,7 @@ export default function Header({ isMac }: any) {
 
             <div className="gap-2 flex">
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/sign-up")}
                 className={cn(
                   buttonVariants({ variant: "default" }),
                   "w-full sm:w-auto text-background flex gap-2 px-8",

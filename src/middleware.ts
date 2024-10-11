@@ -19,7 +19,6 @@ export async function middleware(req: NextRequest) {
 
   if (jwtCookie) {
     const { payload } = await jwtVerify(jwtCookie.value, JWT_SECRET);
-    console.log(payload);
 
     if (!payload.paid && req.nextUrl.pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/login", req.url));

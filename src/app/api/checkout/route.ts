@@ -8,6 +8,7 @@ export async function POST(req: Request) {
   const data = await req.json();
   const priceId = data.priceId;
   const uuid = crypto.randomUUID();
+  const uuidCookie = cookies().get("uuid");
 
   try {
     const checkoutSession: Stripe.Checkout.Session =
@@ -24,20 +25,26 @@ export async function POST(req: Request) {
         cancel_url: `${process.env.TEST_URL}`,
         metadata: {
           priceId,
-          uuid,
+          uuid: uuidCookie ? uuidCookie.value : uuid,
         },
       });
 
     const sql = neon(process.env.DATABASE_URL!);
-    await sql(`INSERT INTO users (uuid, paid) VALUES ($1, $2)`, [uuid, false]);
 
-    cookies().set({
-      name: "uuid",
-      value: uuid,
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365, // 365 days
-      path: "/",
-    });
+    if (!uuidCookie) {
+      await sql(`INSERT INTO users (uuid, paid) VALUES ($1, $2)`, [
+        uuid,
+        false,
+      ]);
+
+      cookies().set({
+        name: "uuid",
+        value: uuid,
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365, // 365 days
+        path: "/",
+      });
+    }
 
     return Response.json({ result: checkoutSession }, { status: 200 });
   } catch (error: any) {

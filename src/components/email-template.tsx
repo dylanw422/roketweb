@@ -1,9 +1,7 @@
 export default function EmailTemplate({
   name,
-  productKey,
 }: {
   name: string | null | undefined;
-  productKey: string | undefined;
 }) {
   return (
     <div style={email}>
@@ -23,8 +21,6 @@ export default function EmailTemplate({
       <a style={link} href="https://discord.gg/qQcfbkbDJF">
         Join Discord
       </a>
-      <h1 style={keyLabel}>Your Product Key</h1>
-      <h1 style={key}>{productKey}</h1>
       <h1 style={footer}>All rights reserved © 2024 Roket.Work</h1>
     </div>
   );

@@ -22,7 +22,7 @@ export default function LoginForm() {
   const router = useRouter();
 
   const handleSubmit = async () => {
-    const res = await axios.post("/api/auth", {
+    const res = await axios.post("/api/signup", {
       email: email,
       password: pw,
       firstName: firstName,

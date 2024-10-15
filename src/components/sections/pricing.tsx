@@ -141,16 +141,12 @@ function PricingTier({
   );
 }
 
-export default function Pricing() {
+export default function Pricing({ signedIn }: { signedIn: boolean }) {
   const router = useRouter();
   const [queryEnabled, setQueryEnabled] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "yearly",
   );
-
-  const handleTabChange = (tab: "yearly" | "monthly") => {
-    setBillingCycle(tab);
-  };
 
   const createCheckout = useQuery({
     queryKey: ["checkout"],
@@ -166,8 +162,12 @@ export default function Pricing() {
   });
 
   const handlePurchaseClick = () => {
-    setQueryEnabled(true);
-    createCheckout.refetch();
+    if (signedIn) {
+      setQueryEnabled(true);
+      createCheckout.refetch();
+    } else {
+      router.push("/signup");
+    }
   };
 
   return (

@@ -40,11 +40,12 @@ export async function POST(request: NextRequest) {
   const uuid = data.metadata?.uuid;
 
   try {
-    await sql(`UPDATE users SET paid = $1, paid_at = $2 WHERE uuid = $3`, [
-      true,
-      new Date(),
-      uuid,
-    ]);
+    await sql(
+      `UPDATE users SET paid = $1, paid_at = $2, name_on_card = $3 WHERE uuid = $4`,
+      [true, new Date(), name, uuid],
+    );
+
+    console.log(data.metadata);
 
     // SEND EMAIL TO USER
     // const { error } = await resend.emails.send({
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     //   });
     // }
 
-    return Response.json("User created.", {
+    return Response.json("Checkout complete.", {
       status: 200,
     });
   } catch (error) {

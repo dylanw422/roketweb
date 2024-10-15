@@ -26,31 +26,20 @@ export async function POST(req: Request) {
     };
 
     if (isPasswordValid) {
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
 
       cookies().set({
         name: "jwt",
         value: token,
         httpOnly: true,
-        maxAge: 60 * 60 * 24 * 7, // 1 days
+        maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
       });
 
-      if (user.paid) {
-        return Response.json(
-          { message: "Logged in.", user: user },
-          { status: 200 },
-        );
-      }
-
-      if (!user.paid) {
-        return Response.json(
-          { message: "You have not purchased a license." },
-          {
-            status: 402,
-          },
-        );
-      }
+      return Response.json(
+        { message: "Logged in.", user: user },
+        { status: 200 },
+      );
     } else if (!isPasswordValid) {
       return Response.json(
         { message: "Invalid email or password." },

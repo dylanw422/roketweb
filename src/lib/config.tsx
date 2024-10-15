@@ -163,16 +163,16 @@ export const siteConfig = {
       ],
     },
     {
-      title: "Resources",
+      title: "Authentication",
       links: [
         {
-          href: "https://discord.gg/qQcfbkbDJF",
-          text: "Community",
+          href: "/signup",
+          text: "Signup",
           icon: null,
         },
         {
-          href: "https://discord.gg/qQcfbkbDJF",
-          text: "Support",
+          href: "/login",
+          text: "Login",
           icon: null,
         },
       ],

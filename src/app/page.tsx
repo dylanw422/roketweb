@@ -11,14 +11,24 @@ import Problem from "@/components/sections/problem";
 import Solution from "@/components/sections/solution";
 import Testimonials from "@/components/sections/testimonials";
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
+
+async function getAuthStatus() {
+  const uuidCookie = cookies().get("uuid");
+  const jwtCookie = cookies().get("jwt");
+
+  if (jwtCookie || uuidCookie) {
+    return { signedIn: true };
+  }
+
+  return { signedIn: false };
+}
 
 export default async function Home() {
-  const userAgent = headers().get("user-agent") || "";
-  const isMac = userAgent.includes("Mac");
-
+  const authStatus = await getAuthStatus();
   return (
     <main>
-      <Header isMac={isMac} />
+      <Header signedIn={authStatus.signedIn} />
       <Hero />
       <Logos />
       <Problem />
@@ -26,7 +36,7 @@ export default async function Home() {
       <HowItWorks />
       <Features />
       <Testimonials />
-      <Pricing />
+      <Pricing signedIn={authStatus.signedIn} />
       <FAQ />
       <CTA />
       <Footer />

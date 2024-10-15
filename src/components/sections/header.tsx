@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Header({ isMac }: any) {
+export default function Header({ signedIn }: { signedIn: boolean }) {
   const [addBorder, setAddBorder] = useState(false);
   const router = useRouter();
 
@@ -57,10 +57,10 @@ export default function Header({ isMac }: any) {
                 onClick={() => router.push("/signup")}
                 className={cn(
                   buttonVariants({ variant: "default" }),
-                  "w-full sm:w-auto text-background flex gap-2 px-8",
+                  "w-full sm:w-auto text-background flex gap-2 ",
                 )}
               >
-                Login
+                {signedIn ? "Login" : "Get Started"}
               </button>
             </div>
           </div>

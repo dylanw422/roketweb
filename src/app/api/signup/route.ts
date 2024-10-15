@@ -21,43 +21,22 @@ export async function POST(req: Request) {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   // INSERT USER INTO DATABASE
+  const uuid = crypto.randomUUID();
   try {
-    const uuid = crypto.randomUUID();
-    const uuidCookie = cookies().get("uuid"); // USER PAID BEFORE MAKING ACCOUNT
-
-    if (uuidCookie) {
-      // USER PAID BEFORE MAKING ACCOUNT
-      const userSearch = await sql(`SELECT * FROM users WHERE uuid = $1`, [
-        uuidCookie.value,
-      ]);
-
-      const user = userSearch[0];
-      if (user) {
-        await sql(
-          `UPDATE users SET email = $1, password = $2, first_name = $3, last_name = $4 WHERE uuid = $5 RETURNING *`,
-          [email, hashedPassword, firstName, lastName, uuidCookie.value],
-        );
-      }
-    }
-
-    // USER HAS NOT PAID
-    const updatedUser = await sql(
-      `INSERT INTO users (email, password, first_name, last_name, paid, uuid) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [email, hashedPassword, firstName, lastName, false, uuid],
+    await sql(
+      `INSERT INTO users (first_name, last_name, email, paid, password, uuid) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [firstName, lastName, email, false, hashedPassword, uuid],
     );
 
     cookies().set({
       name: "uuid",
       value: uuid,
       httpOnly: true,
-      maxAge: 60 * 60 * 24 * 365,
       path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
-    return Response.json(
-      { message: "User created.", user: updatedUser },
-      { status: 200 },
-    );
+    return Response.json("User created.", { status: 200 });
   } catch (e) {
     console.error(e);
     return Response.json("Could not create user.", { status: 500 });

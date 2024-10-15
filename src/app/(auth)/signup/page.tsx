@@ -13,13 +13,34 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { ImSpinner8 } from "react-icons/im";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [queryEnabled, setQueryEnabled] = useState(false);
   const router = useRouter();
+
+  const createCheckout = useQuery({
+    queryKey: ["checkout"],
+    queryFn: async () => {
+      const res = await axios.post("/api/checkout", {
+        priceId: "price_1Q5CKPErMDODl50He7NfE1Ca",
+      });
+      if (res.status === 200) {
+        router.push(res.data.result.url);
+      }
+    },
+    enabled: queryEnabled,
+  });
+
+  const handlePurchaseGenerate = () => {
+    setQueryEnabled(true);
+    createCheckout.refetch();
+  };
 
   const handleSubmit = async () => {
     const res = await axios.post("/api/signup", {
@@ -30,7 +51,7 @@ export default function LoginForm() {
     });
 
     if (res.status === 200) {
-      router.push("/login");
+      handlePurchaseGenerate();
     }
   };
 
@@ -88,7 +109,11 @@ export default function LoginForm() {
             type="submit"
             className="w-full"
           >
-            Create an account
+            {createCheckout.isFetching ? (
+              <ImSpinner8 className="animate-spin" />
+            ) : (
+              "Create an account"
+            )}
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">

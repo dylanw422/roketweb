@@ -2,6 +2,18 @@ import { siteConfig } from "@/lib/config";
 import { type ClassValue, clsx } from "clsx";
 import { Metadata } from "next";
 import { twMerge } from "tailwind-merge";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+
+export interface Job {
+  id: number;
+  position: string;
+  company: string;
+  type: string;
+  location: string;
+  salary: string;
+  url: string;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -87,3 +99,128 @@ export function formatDate(date: string) {
     return `${fullDate} (${yearsAgo}y ago)`;
   }
 }
+
+export const convertToYearlySalary = (salary: any) => {
+  if (salary.toLowerCase() === "no salary provided") {
+    return null; // Ignore if no salary is provided
+  }
+
+  // Regex patterns for different salary formats
+  const hourlyPattern = /\$([\d,.]+)\/hr/;
+  const yearlyPattern = /\$([\d,.]+)K\/yr/;
+  const hourlyRangePattern = /\$([\d,.]+)\/hr - \$([\d,.]+)\/hr/;
+  const yearlyRangePattern = /\$([\d,.]+)K\/yr - \$([\d,.]+)K\/yr/;
+
+  const hoursPerWeek = 40;
+  const weeksPerYear = 52;
+
+  // Handle hourly range
+  if (hourlyRangePattern.test(salary)) {
+    const match = salary.match(hourlyRangePattern);
+    const minHourly = parseFloat(match[1].replace(/,/g, ""));
+    const maxHourly = parseFloat(match[2].replace(/,/g, ""));
+    return ((minHourly + maxHourly) / 2) * hoursPerWeek * weeksPerYear;
+  }
+
+  // Handle hourly single rate
+  if (hourlyPattern.test(salary)) {
+    const match = salary.match(hourlyPattern);
+    const hourlyRate = parseFloat(match[1].replace(/,/g, ""));
+    return hourlyRate * hoursPerWeek * weeksPerYear;
+  }
+
+  // Handle yearly range
+  if (yearlyRangePattern.test(salary)) {
+    const match = salary.match(yearlyRangePattern);
+    const minYearly = parseFloat(match[1].replace(/,/g, "")) * 1000;
+    const maxYearly = parseFloat(match[2].replace(/,/g, "")) * 1000;
+    return (minYearly + maxYearly) / 2;
+  }
+
+  // Handle yearly single rate
+  if (yearlyPattern.test(salary)) {
+    const match = salary.match(yearlyPattern);
+    return parseFloat(match[1].replace(/,/g, "")) * 1000;
+  }
+
+  return null; // Return null for unrecognized formats
+};
+
+export const findMostAppliedPos = (jobs: Job[], socketJobs: Job[]) => {
+  const posCnt: { [key: string]: number } = {};
+  [...jobs, ...socketJobs].forEach((job: any) => {
+    const pos = job.position;
+    posCnt[pos] = (posCnt[pos] || 0) + 1;
+  });
+
+  let mostAppliedPos = null;
+  let maxCnt = 0;
+  for (const pos in posCnt) {
+    if (posCnt[pos] > maxCnt) {
+      mostAppliedPos = pos;
+      maxCnt = posCnt[pos];
+    }
+  }
+  return mostAppliedPos;
+};
+
+export const findAvgSalary = (jobs: Job[], socketJobs: Job[]) => {
+  const allJobs = [...jobs, ...socketJobs];
+
+  const validSalaries = allJobs
+    .map((job: any) => convertToYearlySalary(job.salary))
+    .filter((salary: number | null): salary is number => salary !== null);
+
+  const totalSalary = validSalaries.reduce(
+    (sum: number, salary: number) => sum + salary,
+    0,
+  );
+
+  return Math.round(totalSalary / validSalaries.length).toLocaleString();
+};
+
+export const findHighestPaying = (jobs: Job[], socketJobs: Job[]) => {
+  let highestPayingCompany: string | null = null;
+  let highestSalary = 0;
+
+  [...jobs, ...socketJobs].forEach((job: any) => {
+    const yearlySalary = convertToYearlySalary(job.salary); // normalize salary to yearly
+
+    if (yearlySalary !== null && yearlySalary > highestSalary) {
+      highestSalary = yearlySalary;
+      highestPayingCompany = job.company;
+    }
+  });
+
+  return highestPayingCompany;
+};
+
+export const fetchJobsData = async () => {
+  const res = await axios.get("/api/jobs");
+  if (!res || !res.data) {
+    return [];
+  }
+  return res.data;
+};
+
+export const fetchPrefsData = async () => {
+  const res = await axios.get("/api/preferences");
+  if (!res || !res.data) {
+    return {};
+  }
+  return res.data;
+};
+
+export const useJobsQuery = () => {
+  return useQuery({
+    queryKey: ["jobs"],
+    queryFn: fetchJobsData,
+  });
+};
+
+export const usePrefsQuery = () => {
+  return useQuery({
+    queryKey: ["prefs"],
+    queryFn: fetchPrefsData,
+  });
+};

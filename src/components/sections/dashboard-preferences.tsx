@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,19 +11,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from "axios";
+import { usePrefsQuery } from "@/lib/utils";
 
-export default function JobSearchForm({ prefs }: { prefs: any }) {
-  const [email, setEmail] = useState(prefs.email);
-  const [password, setPassword] = useState(prefs.password);
-  const [jobSearch, setJobSearch] = useState(prefs.search);
-  const [experience, setExperience] = useState(prefs.experience);
-  const [salary, setSalary] = useState(prefs.salary);
-  const [employmentType, setEmploymentType] = useState(prefs.type);
-  const [locationType, setLocationType] = useState(prefs.location);
+export default function DashboardPreferences() {
+  const { data: prefs } = usePrefsQuery();
+
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [jobSearch, setJobSearch] = useState<string>("");
+  const [experience, setExperience] = useState<string>(
+    prefs?.prefs?.experience || "",
+  );
+  const [salary, setSalary] = useState<string>(prefs?.prefs?.salary || "");
+  const [employmentType, setEmploymentType] = useState<string>(
+    prefs?.prefs?.type || "",
+  );
+  const [locationType, setLocationType] = useState<string>(
+    prefs?.prefs?.location || "",
+  );
+
+  useEffect(() => {
+    if (prefs) {
+      setEmail(prefs.prefs.email);
+      setPassword(prefs.prefs.password);
+      setJobSearch(prefs.prefs.search);
+      setExperience(prefs.prefs.experience);
+      setSalary(prefs.prefs.salary);
+      setEmploymentType(prefs.prefs.type);
+      setLocationType(prefs.prefs.location);
+    }
+  }, [prefs]);
+
+  console.log(prefs);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.post("/api/preferences", {
+    await axios.post("/api/preferences/update", {
       email,
       password,
       search: jobSearch,
@@ -95,9 +118,9 @@ export default function JobSearchForm({ prefs }: { prefs: any }) {
               <SelectValue placeholder="Select salary range" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0-50k">$0 - $50,000</SelectItem>
-              <SelectItem value="50k-100k">$50,000 - $100,000</SelectItem>
-              <SelectItem value="100k+">$100,000+</SelectItem>
+              <SelectItem value="60k">$60,000 +</SelectItem>
+              <SelectItem value="100k">$100,000 +</SelectItem>
+              <SelectItem value="140k">$140,000+</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -131,10 +154,10 @@ export default function JobSearchForm({ prefs }: { prefs: any }) {
       </form>
       <div className="my-4 mb-24 text-sm text-red-600">
         <strong>Important Security Note:</strong> We do not and will never save
-        your data. Your LinkedIn email and password is only saved on your
-        machine and is neccessary for our app to login to your account and apply
-        to jobs on your behalf. By pressing &quot;Submit&quot;, you agree to
-        these terms.
+        your data. Your LinkedIn email and password is encrypted and saved on
+        your machine and is neccessary for our app to login to your account and
+        apply to jobs on your behalf. By pressing &quot;Submit&quot;, you agree
+        to these terms.
       </div>
     </div>
   );

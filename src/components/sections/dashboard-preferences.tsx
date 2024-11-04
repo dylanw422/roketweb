@@ -120,7 +120,7 @@ export default function DashboardPreferences() {
             <SelectContent>
               <SelectItem value="60k">$60,000 +</SelectItem>
               <SelectItem value="100k">$100,000 +</SelectItem>
-              <SelectItem value="140k">$140,000+</SelectItem>
+              <SelectItem value="140k">$140,000 +</SelectItem>
             </SelectContent>
           </Select>
         </div>

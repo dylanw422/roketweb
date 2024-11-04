@@ -32,13 +32,13 @@ export default function DashboardPreferences() {
 
   useEffect(() => {
     if (prefs) {
-      setEmail(prefs.prefs.email);
-      setPassword(prefs.prefs.password);
-      setJobSearch(prefs.prefs.search);
-      setExperience(prefs.prefs.experience);
-      setSalary(prefs.prefs.salary);
-      setEmploymentType(prefs.prefs.type);
-      setLocationType(prefs.prefs.location);
+      setEmail(prefs?.prefs?.email);
+      setPassword(prefs?.prefs?.password);
+      setJobSearch(prefs?.prefs?.search);
+      setExperience(prefs?.prefs?.experience);
+      setSalary(prefs?.prefs?.salary);
+      setEmploymentType(prefs?.prefs?.type);
+      setLocationType(prefs?.prefs?.location);
     }
   }, [prefs]);
 
